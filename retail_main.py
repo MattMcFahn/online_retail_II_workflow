@@ -18,11 +18,11 @@
 
 # Import modules
 import pandas as pd
-import matplotlib.pyplot as plt
-import nltk
+pd.options.mode.chained_assignment = None  # default='warn'
 
 import retail_helpers
 import retail_cleaning
+import retail_modelling
 
 # Dataset location (replace with the location of the online_retail_II csv file)
 source = r'C:\Users\mattm\Documents\Coding\Tableau_Data_Sources\online_retail_II.csv'
@@ -76,7 +76,7 @@ def __simple_profiling(dataframe, profiling):
     descriptive_df = dataframe.describe()
     frames['description'] = descriptive_df
     retail_helpers.dictionary_dump(frames = frames, 
-                                   outputs = outputs, 
+                                   outputs = profiling, 
                                    filename = 'Descriptive')
     
     return None
@@ -85,19 +85,31 @@ def main():
     """
     Full pipeline for data processing, modelling, and validation.
     """
-    # Load data
+    print('''Loading data... ''')
     dataframe = __load_data(source)
-    __simple_profiling(dataframe, profiling)
+    print('''Loading data... COMPLETE''')
     
-    # Run all cleaning
+    print('''Profiling data... ''')
+    __simple_profiling(dataframe, profiling)
+    print('''Profiling data... COMPLETE''')
+    
+    print('''Cleaning data... ''')
     df_cleaned = retail_cleaning.cleaning_main(dataframe)
+    del dataframe
+    print('''Cleaning data... COMPLETE''')
+    
     
     # Run modelling
-    # TODO
-    
-    # Post modelling wrangling
-    
-    # Output to local locations
-    
+    print('''Modelling... ''')
+    modelled_datasets = retail_modelling.modelling_main(df_cleaned)
+    print('''Modelling... COMPLETE''')
+
+
+    print('''OUTPUT>>> ''')
+    retail_helpers.dictionary_dump(frames = modelled_datasets, 
+                                   outputs = outputs, 
+                                   filename = 'online_retail_II_Support')
+    df_cleaned.to_csv(rf'{outputs}\Tidied_online_retail_II.csv', index = False)
+    print('''OUTPUT>>> COMPLETE''')
     return None
 

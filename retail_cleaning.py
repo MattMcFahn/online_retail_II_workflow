@@ -109,7 +109,9 @@ def __overwrite_check_records(dataframe, duplicates):
     #dupes = top_descriptions.loc[top_descriptions.duplicated(subset = 'StockCode', keep = False)]
     
     # Update top descriptions manually
-    top_descriptions.drop([803, 1103], inplace = True) # Cases where a StockCode has two max Quantities
+    top_descriptions = top_descriptions.loc[~(top_descriptions['Description'] == 'S/16 VINTAGE IVORY CUTLERY')] # Cases where a StockCode has two max Quantities
+    top_descriptions = top_descriptions.loc[~((top_descriptions['Description'] == 'found') & (top_descriptions['StockCode'] == '35598C'))] 
+    
     top_descriptions.reset_index(inplace = True, drop = True)
     top_descriptions.rename(columns = {'Description':'Description_New'}, inplace = True)
     top_descriptions = top_descriptions[['StockCode','Description_New']]
@@ -144,7 +146,8 @@ def __overwrite_duped_descriptions(dataframe, duplicates):
     # Create a mapping of "issue" descriptions to new descriptions
     new_descr = duplicates.groupby(['StockCode'])['Quantity'].max().reset_index()
     new_descr = new_descr.merge(duplicates, on = ['StockCode','Quantity']).rename(columns = {'Description':'Description_New','Quantity':'QuantityMax'})
-    new_descr.drop([746,1026], inplace = True)
+    new_descr = new_descr.loc[~(new_descr['Description_New'] == 'S/16 VINTAGE IVORY CUTLERY')] # Cases where a StockCode has two max Quantities
+    new_descr = new_descr.loc[~((new_descr['Description_New'] == 'found') & (new_descr['StockCode'] == '35598C'))] 
     
     descr_mapping = new_descr.merge(duplicates, on = ['StockCode'])
     descr_mapping.drop(columns = {'Quantity','QuantityMax'}, inplace = True)
@@ -200,6 +203,9 @@ def __address_duplicate_descriptions(dataframe):
     dataframe = dataframe.merge(issues, on = 'Description', how = 'left')
     dataframe = __overwrite_duped_descriptions(dataframe, duplicates)
     
+    # HACK - For StockCode '84968B' which we had to exclude earlier
+    dataframe.loc[dataframe['StockCode'] == '84968B', 'Description'] = 'SET OF 16 VINTAGE IVORY CUTLERY'
+    
     return dataframe
 
 def cleaning_main(dataframe):
@@ -227,14 +233,13 @@ def cleaning_main(dataframe):
             * Add columns to further segment the data / flag incomplete
             (so these can be filtered out of any modelling + reporting)
     
-    Notes:
-        > There are no records of 'Invoice' missing
-    
-    Added columns:
-        > 'CancelledOrder': Bool (was this order cancelled)
-        > 'Issue': Bool ()
-        > 'incomplete': Bool (information for this order is incomplete)
     """
+    # Make StockCode upper case
+    dataframe['StockCode'] = dataframe['StockCode'].str.upper()
+    
+    # Drop duplicate entries
+    dataframe = dataframe.loc[~(dataframe.duplicated(keep = 'last'))]
+    
     dataframe['CancelledOrder'] = dataframe.Invoice.str.contains('C')
     # Create numeric stock codes
     #dataframe['StockCodeNumeric'] = dataframe['StockCode'].apply(lambda x: re.sub(r'[a-zA-z]','', x))
@@ -247,10 +252,13 @@ def cleaning_main(dataframe):
     # Multi descriptions for one Stockcode, overwrite or re-classify as an issue
     dataframe['OrigDescription'] = dataframe['Description']
     dataframe = __address_duplicate_descriptions(dataframe)
-
-    # Deal with other incomplete data: price, description
+    dataframe['IssueWithItem'].fillna(False, inplace = True)
+    
+    
+    # Deal with other incomplete /negative data: price, description, quantity
     dataframe['NoDescriptionOrPrice'] = dataframe['Description'].isna()
     dataframe['PriceIsCredit'] = (dataframe['Price'] < 0)
+    dataframe['QuantityLeqZero'] = (dataframe['Quantity'] <= 0)
     
     # Create Time, Date seperately
     dataframe['Date'] = dataframe['InvoiceDate'].dt.date
@@ -259,8 +267,7 @@ def cleaning_main(dataframe):
     # Reorder columns
     columns = ['Invoice','StockCode','Description','OrigDescription','Customer ID','Country',
                'Quantity','Price','InvoiceDate','Date','Time',
-               'CancelledOrder','IssueWithItem','IssueCategory','NoDescriptionOrPrice','PriceIsCredit']
+               'CancelledOrder','IssueWithItem','IssueCategory','QuantityLeqZero','NoDescriptionOrPrice','PriceIsCredit']
     dataframe = dataframe[columns]
     
     return dataframe
-

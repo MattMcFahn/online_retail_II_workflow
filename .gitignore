@@ -126,3 +126,7 @@ dmypy.json
 
 # Visual studio
 .vs/
+
+# Local output folder
+Outputs/
+Outputs/*
