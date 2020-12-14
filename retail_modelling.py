@@ -106,12 +106,12 @@ def __RFM_identification(rfm_data):
     customer_rfm.loc[(customer_rfm['Recency'] + customer_rfm['Frequency'] + customer_rfm['Monetary']).isin([7,8,9]), 'Segment'] = 'Average Customer'
     customer_rfm.loc[(customer_rfm['Recency'] + customer_rfm['Frequency'] + customer_rfm['Monetary']).isin([10,11,12,13]), 'Segment'] = 'Good Customer'
     
-    customer_rfm.loc[customer_rfm['RFMScore'].str[1] == '1', 'Segment'] = 'Lost Customers'
+    customer_rfm.loc[customer_rfm['RFMScore'].str[0] == '1', 'Segment'] = 'Lost Customers'
     customer_rfm.loc[customer_rfm['RFMScore'].str[1] == '1', 'Segment'] = 'Infrequent Shopper'
-    customer_rfm.loc[customer_rfm['RFMScore'].str[1] == '1', 'Segment'] = 'Small Spender'
+    customer_rfm.loc[customer_rfm['RFMScore'].str[2] == '1', 'Segment'] = 'Small Spender'
     customer_rfm.loc[customer_rfm['RFMScore'] == '111', 'Segment'] = 'Worst Customers'
     
-    customer_rfm.loc[customer_rfm['RFMScore'].str[1] == '4', 'Segment'] = 'Recent Customers'
+    customer_rfm.loc[customer_rfm['RFMScore'].str[0] == '4', 'Segment'] = 'Recent Customers'
     customer_rfm.loc[customer_rfm['RFMScore'].str[1] == '4', 'Segment'] = 'Frequent Shoppers'
     customer_rfm.loc[customer_rfm['RFMScore'].str[2] == '4', 'Segment'] = 'Big Spenders'
     customer_rfm.loc[customer_rfm['RFMScore'] == '444', 'Segment'] = 'Best Customers'
