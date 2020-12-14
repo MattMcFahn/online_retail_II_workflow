@@ -106,10 +106,14 @@ def main():
 
 
     print('''OUTPUT>>> ''')
+    df_cleaned = df_cleaned.merge(modelled_datasets['Customers'][['Customer ID', 'Segment']], 
+                                  how = 'left', on = 'Customer ID', validate = 'many_to_one')
     retail_helpers.dictionary_dump(frames = modelled_datasets, 
                                    outputs = outputs, 
                                    filename = 'online_retail_II_Support')
-    df_cleaned.to_csv(rf'{outputs}\Tidied_online_retail_II.csv', index = False)
+    
+
+    df_cleaned.to_csv(rf'{outputs}\Tidied_online_retail_II_FULL.csv', index = False)
     print('''OUTPUT>>> COMPLETE''')
     return None
 

@@ -238,7 +238,7 @@ def cleaning_main(dataframe):
     dataframe['StockCode'] = dataframe['StockCode'].str.upper()
     
     # Drop duplicate entries
-    dataframe = dataframe.loc[~(dataframe.duplicated(keep = 'last'))]
+    #dataframe = dataframe.loc[~(dataframe.duplicated(keep = 'last'))]
     
     dataframe['CancelledOrder'] = dataframe.Invoice.str.contains('C')
     # Create numeric stock codes
