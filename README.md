@@ -3,4 +3,4 @@
  
  Data: https://www.kaggle.com/mashlyn/online-retail-ii-uci
  
- Reporting: https://public.tableau.com/profile/matt.mcfahn#!/vizhome/online_retail_II_dash/HistoricalTrends?
+ Reporting: https://public.tableau.com/profile/matt.mcfahn#!/vizhome/online_retail_II_dash/Trendsbygeography
